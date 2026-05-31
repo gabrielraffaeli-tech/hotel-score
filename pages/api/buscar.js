@@ -1,5 +1,6 @@
 import { buscarHotel, obtenerReseñas } from '../../lib/googlePlaces'
 import { buscarHotelSerpApi, obtenerReseñasSerpApi } from '../../lib/serpapi'
+import { obtenerReseñasBooking } from '../../lib/booking'
 import { analizarReseñas } from '../../lib/reviewAnalyzer'
 import { generarDemoData } from '../../lib/mockData'
 
@@ -100,6 +101,21 @@ export default async function handler(req, res) {
       }
     } catch (e) {
       console.error('Error SerpAPI:', e.message)
+    }
+  }
+
+  // PASO 3: Booking.com via SerpAPI Google Hotels
+  if (tieneSerpApi) {
+    try {
+      const datosBooking = await obtenerReseñasBooking(nombre, ciudad)
+      if (datosBooking && datosBooking.reseñas.length > 0) {
+        fuentes.push(datosBooking)
+        todasLasReseñas = todasLasReseñas.concat(
+          datosBooking.reseñas.map(r => ({ text: r.texto, rating: r.calificacion ? r.calificacion / 2 : null }))
+        )
+      }
+    } catch (e) {
+      console.error('Error Booking:', e.message)
     }
   }
 

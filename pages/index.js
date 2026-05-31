@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Head from 'next/head'
 import { LogoCompact } from '../components/Logo'
 import ScoreCard from '../components/ScoreCard'
@@ -38,34 +38,37 @@ export default function Home() {
   const [mostrarReseñas, setMostrarReseñas] = useState(false)
   const [multipleOpciones, setMultipleOpciones] = useState(null)
   const resultRef = useRef(null)
+  const [compartido, setCompartido] = useState(false)
 
-  async function buscar(e) {
-    e.preventDefault()
-    if (!nombre.trim() || !ciudad.trim()) return
+  // Al cargar la página, leer parámetros de la URL y buscar automáticamente
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const hotelParam = params.get('hotel')
+    const ciudadParam = params.get('ciudad')
+    const domicilioParam = params.get('domicilio')
+    if (hotelParam && ciudadParam) {
+      setNombre(hotelParam)
+      setCiudad(ciudadParam)
+      if (domicilioParam) setDomicilio(domicilioParam)
+      // Buscar automáticamente
+      buscarDirecto(hotelParam, ciudadParam, domicilioParam || '')
+    }
+  }, [])
 
+  async function buscarDirecto(nombreVal, ciudadVal, domicilioVal = '') {
     setCargando(true)
     setError(null)
     setResultado(null)
-    setMostrarReseñas(false)
-
+    setMultipleOpciones(null)
     try {
       const res = await fetch('/api/buscar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: nombre.trim(), ciudad: ciudad.trim(), domicilio: domicilio.trim() }),
+        body: JSON.stringify({ nombre: nombreVal, ciudad: ciudadVal, domicilio: domicilioVal }),
       })
-
       const data = await res.json()
-
-      // Múltiples hoteles encontrados
-      if (data.multipleResultados) {
-        setMultipleOpciones(data)
-        return
-      }
-
+      if (data.multipleResultados) { setMultipleOpciones(data); return }
       if (!res.ok) throw new Error(data.error || 'Error al buscar el hotel')
-
-      setMultipleOpciones(null)
       setResultado(data)
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch (err) {
@@ -73,6 +76,30 @@ export default function Home() {
     } finally {
       setCargando(false)
     }
+  }
+
+  function compartir() {
+    const params = new URLSearchParams()
+    params.set('hotel', nombre.trim())
+    params.set('ciudad', ciudad.trim())
+    if (domicilio.trim()) params.set('domicilio', domicilio.trim())
+    const url = `${window.location.origin}/?${params.toString()}`
+    navigator.clipboard.writeText(url).then(() => {
+      setCompartido(true)
+      setTimeout(() => setCompartido(false), 3000)
+    })
+  }
+
+  async function buscar(e) {
+    e.preventDefault()
+    if (!nombre.trim() || !ciudad.trim()) return
+    // Actualizar URL con los parámetros
+    const params = new URLSearchParams()
+    params.set('hotel', nombre.trim())
+    params.set('ciudad', ciudad.trim())
+    if (domicilio.trim()) params.set('domicilio', domicilio.trim())
+    window.history.replaceState({}, '', `/?${params.toString()}`)
+    await buscarDirecto(nombre.trim(), ciudad.trim(), domicilio.trim())
   }
 
   function usarEjemplo(ej) {
@@ -263,6 +290,24 @@ export default function Home() {
               </div>
 
               <ScoreCard analisis={resultado.analisis} />
+
+              {/* Botón compartir */}
+              <button
+                onClick={compartir}
+                className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors active:scale-95"
+              >
+                {compartido ? (
+                  <>
+                    <span>✅</span>
+                    <span className="text-green-600">¡Link copiado! Listo para compartir</span>
+                  </>
+                ) : (
+                  <>
+                    <span>🔗</span>
+                    <span>Compartir resultado</span>
+                  </>
+                )}
+              </button>
 
               <p className="text-center text-xs text-gray-400 pb-4">
                 El puntaje se calcula automáticamente analizando el texto de las reseñas.
