@@ -289,7 +289,7 @@ export default function Home() {
                 )}
               </div>
 
-              <ScoreCard analisis={resultado.analisis} />
+              <ScoreCard analisis={resultado.analisis} reseñasCompletas={resultado.reseñasCompletas || []} />
 
               {/* Botón compartir */}
               <button

@@ -131,6 +131,7 @@ export default async function handler(req, res) {
       ciudad,
       direccion: domicilio || fuentes[0]?.direccion || '',
     },
+    reseñasCompletas: todasLasReseñas,
     fuentes,
     analisis,
     esDemo: false,
