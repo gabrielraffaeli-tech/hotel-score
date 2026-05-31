@@ -213,23 +213,6 @@ export default function Home() {
             </button>
           </form>
 
-          {/* Ejemplos rápidos */}
-          {!resultado && !cargando && (
-            <div className="mt-4">
-              <p className="text-xs text-gray-400 text-center mb-2">Probá con un ejemplo</p>
-              <div className="flex gap-2 flex-wrap justify-center">
-                {EJEMPLOS.map(ej => (
-                  <button
-                    key={ej.nombre}
-                    onClick={() => usarEjemplo(ej)}
-                    className="text-xs bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full hover:border-hcyan hover:text-navy-700 transition-colors"
-                  >
-                    {ej.nombre} · {ej.ciudad}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Loading */}
           {cargando && <Spinner />}
