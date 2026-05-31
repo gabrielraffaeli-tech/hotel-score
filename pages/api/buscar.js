@@ -1,5 +1,5 @@
 import { buscarHotel, obtenerReseñas } from '../../lib/googlePlaces'
-import { buscarHotelTripAdvisor, obtenerReseñasTripAdvisor } from '../../lib/tripadvisor'
+import { buscarHotelSerpApi, obtenerReseñasSerpApi } from '../../lib/serpapi'
 import { analizarReseñas } from '../../lib/reviewAnalyzer'
 import { generarDemoData } from '../../lib/mockData'
 
@@ -15,52 +15,53 @@ export default async function handler(req, res) {
   }
 
   const tieneGoogle = !!process.env.GOOGLE_PLACES_API_KEY
-  const tieneTripAdvisor = !!process.env.TRIPADVISOR_API_KEY
+  const tieneSerpApi = !!process.env.SERPAPI_KEY
 
-  // Sin APIs configuradas: modo demo con datos realistas
-  if (!tieneGoogle && !tieneTripAdvisor) {
+  // Sin APIs: modo demo
+  if (!tieneGoogle && !tieneSerpApi) {
     const demo = generarDemoData(nombre, ciudad)
     const todasLasReseñas = demo.fuentes.flatMap(f =>
-      f.reseñas.map(r => ({
-        text: r.texto || r.text,
-        rating: r.calificacion || r.rating,
-      }))
+      f.reseñas.map(r => ({ text: r.texto || r.text, rating: r.calificacion || r.rating }))
     )
-    const analisis = analizarReseñas(todasLasReseñas)
-
     return res.status(200).json({
       hotel: demo.hotel,
       fuentes: demo.fuentes,
-      analisis,
+      analisis: analizarReseñas(todasLasReseñas),
       esDemo: true,
     })
   }
 
-  // Con APIs reales
   const fuentes = []
   let todasLasReseñas = []
+  let hotelInfo = null
 
-  // Google Places
+  // PASO 1: Buscar el hotel con Google Places (para info base y detección de duplicados)
   if (tieneGoogle) {
     try {
       const lugar = await buscarHotel(nombre, ciudad, domicilio)
 
-      // Múltiples resultados — pedir dirección al usuario
       if (lugar?.multipleResultados) {
         return res.status(300).json({
           multipleResultados: true,
           mensaje: 'Encontramos varios hoteles con ese nombre. Agregá la dirección para identificar el correcto.',
           opciones: lugar.opciones,
+          total: lugar.total,
         })
       }
 
       if (lugar) {
+        hotelInfo = lugar
+        // Traer las 5 reseñas de Google Places como base
         const datos = await obtenerReseñas(lugar.place_id)
         if (datos) {
           fuentes.push({
-            ...datos,
+            fuente: 'Google',
+            nombre: datos.nombre,
             rating: datos.rating,
             totalReseñas: datos.totalReseñas,
+            direccion: datos.direccion,
+            url: datos.url,
+            reseñas: datos.reseñas,
           })
           todasLasReseñas = todasLasReseñas.concat(
             datos.reseñas.map(r => ({ text: r.texto, rating: r.calificacion }))
@@ -69,25 +70,36 @@ export default async function handler(req, res) {
       }
     } catch (e) {
       console.error('Error Google Places:', e.message)
-      return res.status(500).json({ error: 'Error Google Places: ' + e.message })
     }
   }
 
-  // TripAdvisor
-  if (tieneTripAdvisor) {
+  // PASO 2: SerpAPI Google Maps Reviews — trae muchas más reseñas
+  if (tieneSerpApi) {
     try {
-      const lugar = await buscarHotelTripAdvisor(nombre, ciudad)
+      const lugar = await buscarHotelSerpApi(nombre, ciudad, domicilio)
+
       if (lugar) {
-        const datos = await obtenerReseñasTripAdvisor(lugar.location_id)
-        if (datos) {
-          fuentes.push(datos)
+        const reseñasSerpApi = await obtenerReseñasSerpApi(lugar.data_id, nombre)
+
+        if (reseñasSerpApi && reseñasSerpApi.length > 0) {
+          // Agregar como fuente separada "Google Maps (extendido)"
+          fuentes.push({
+            fuente: 'Google Maps',
+            nombre: lugar.title || nombre,
+            rating: lugar.rating,
+            totalReseñas: lugar.reviews,
+            direccion: lugar.address,
+            url: lugar.link,
+            reseñas: reseñasSerpApi,
+          })
+
           todasLasReseñas = todasLasReseñas.concat(
-            datos.reseñas.map(r => ({ text: r.texto, rating: r.calificacion }))
+            reseñasSerpApi.map(r => ({ text: r.texto, rating: r.calificacion }))
           )
         }
       }
     } catch (e) {
-      console.error('Error TripAdvisor:', e.message)
+      console.error('Error SerpAPI:', e.message)
     }
   }
 
