@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Franjas diagonales (inclinadas como la h. itálica), misma altura que la letra -->
+  <!-- Top y=18, Bottom y=88, offset diagonal +12px hacia la derecha abajo -->
+  <polygon points="6,18  14,18  26,88  18,88"  fill="#4DC3E8"/>
+  <polygon points="13,18 20,18  32,88  25,88"  fill="#00A651"/>
+  <polygon points="19,18 26,18  38,88  31,88"  fill="#FFD100"/>
+  <polygon points="25,18 31,18  43,88  37,88"  fill="#0D1B48"/>
+  <!-- h. -->
+  <text
+    x="30" y="88"
+    font-family="Georgia,'Times New Roman',serif"
+    font-weight="700"
+    font-style="italic"
+    font-size="75"
+    fill="#0D1B48"
+  >h.</text>
+</svg>

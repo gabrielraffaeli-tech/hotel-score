@@ -122,7 +122,7 @@ export default function Home() {
         <title>Hannover · HotelScore</title>
         <meta name="description" content="Analizá reseñas de Google, TripAdvisor y Booking en segundos" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 60 60%22><rect x='0' y='8' width='8' height='44' fill='%2300AEEF'/><rect x='11' y='8' width='8' height='44' fill='%23FFD100'/><rect x='22' y='8' width='8' height='44' fill='%2300A651'/></svg>" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
       </Head>
 
       <div className="min-h-dvh" style={{ background: '#F4F6F9' }}>
