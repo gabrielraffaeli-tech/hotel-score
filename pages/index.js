@@ -130,7 +130,7 @@ export default function Home() {
         <div className="bg-white border-b border-orange-100 sticky top-0 z-10">
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <LogoCompact height={40} />
+              <LogoCompact height={52} />
               <div>
                 <h1 className="text-lg font-black text-gray-900 leading-none">HotelScore</h1>
                 <p className="text-xs text-orange-500 font-medium">Opiniones al instante</p>
