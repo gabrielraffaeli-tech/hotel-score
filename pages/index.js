@@ -39,6 +39,27 @@ export default function Home() {
   const [multipleOpciones, setMultipleOpciones] = useState(null)
   const resultRef = useRef(null)
   const [compartido, setCompartido] = useState(false)
+  const [resumenIA, setResumenIA] = useState(null)
+  const [cargandoIA, setCargandoIA] = useState(false)
+
+async function generarResumenIA(datosHotel, reseñas) {
+    setCargandoIA(true)
+    setResumenIA(null)
+    try {
+      const res = await fetch('/api/resumen-ia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hotel: datosHotel, reseñas: reseñas.slice(0, 20) }),
+      })
+      const data = await res.json()
+      if (data.resumen) setResumenIA(data.resumen)
+    } catch (err) {
+      console.error("Error IA:", err)
+      setResumenIA("El resumen inteligente no está disponible en este momento.")
+    } finally {
+      setCargandoIA(false)
+    }
+  }
 
   // Al cargar la página, leer parámetros de la URL y buscar automáticamente
   useEffect(() => {
@@ -60,6 +81,7 @@ export default function Home() {
     setError(null)
     setResultado(null)
     setMultipleOpciones(null)
+    setResumenIA(null)
     try {
       const res = await fetch('/api/buscar', {
         method: 'POST',
@@ -70,6 +92,9 @@ export default function Home() {
       if (data.multipleResultados) { setMultipleOpciones(data); return }
       if (!res.ok) throw new Error(data.error || 'Error al buscar el hotel')
       setResultado(data)
+if (data.reseñasCompletas && data.reseñasCompletas.length > 0) {
+        generarResumenIA(data.hotel, data.reseñasCompletas)
+      }
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch (err) {
       setError(err.message)
@@ -114,6 +139,7 @@ export default function Home() {
     setResultado(null)
     setError(null)
     setMultipleOpciones(null)
+    setResumenIA(null)
   }
 
   return (
@@ -272,7 +298,29 @@ export default function Home() {
                 )}
               </div>
 
-              <ScoreCard analisis={resultado.analisis} reseñasCompletas={resultado.reseñasCompletas || []} />
+   {/* Resumen IA (Estilo Google) */}
+              {(cargandoIA || resumenIA) && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3 mt-4 mb-4 text-left shadow-sm">
+                  <span className="text-xl">✨</span>
+                  <div>
+                    <strong className="text-sm font-bold text-gray-900 block mb-1">
+                      Resumen de opiniones con IA
+                    </strong>
+                    {cargandoIA ? (
+                      <div className="flex items-center gap-1 mt-2 h-5">
+                        <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce"></div>
+                        <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {resumenIA}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}        
+   <ScoreCard analisis={resultado.analisis} reseñasCompletas={resultado.reseñasCompletas || []} />
 
               {/* Botón compartir */}
               <button
