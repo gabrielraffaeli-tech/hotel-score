@@ -320,8 +320,18 @@ if (data.reseñasCompletas && data.reseñasCompletas.length > 0) {
                   </div>
                 </div>
               )}        
-   <ScoreCard analisis={resultado.analisis} reseñasCompletas={resultado.reseñasCompletas || []} />
-
+   
+<ScoreCard analisis={resultado.analisis} reseñasCompletas={resultado.reseñasCompletas || []} />
+{/* Cajita de Inteligencia Artificial */}
+<div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 shadow-sm">
+  <div className="flex items-center gap-2 mb-2">
+    <span className="text-xl">✨</span>
+    <h3 className="font-bold text-blue-900">Resumen con Inteligencia Artificial</h3>
+  </div>
+  <p className="text-blue-800 text-sm">
+    {resumenIA ? resumenIA : "Generando resumen inteligente..."}
+  </p>
+</div>
               {/* Botón compartir */}
               <button
                 onClick={compartir}
