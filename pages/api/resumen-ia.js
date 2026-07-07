@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     // Extraemos el texto exacto que escribió la IA
     const resumenFinal = data.candidates[0].content.parts[0].text;
 
-    // 6. Le devolvemos el resumen listo a la pantalla (al index.js)
+    // 6. Le devolvemos el resumen listo a la pantalla
     return res.status(200).json({ resumen: resumenFinal });
 
   } catch (error) {
