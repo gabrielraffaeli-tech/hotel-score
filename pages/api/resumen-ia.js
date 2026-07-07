@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     const prompt = `Lee estas opiniones del hotel ${hotel.nombre} en la ciudad de ${hotel.ciudad}. Redacta una única oración de máximo 30 palabras que resuma su categoría, ubicación y su mayor atractivo, sin listar servicios. Opiniones a analizar:\n${textoReseñas}`;
 
     // 5. Nos conectamos con Google Gemini para pedirle el resumen rápido
-    const respuestaIA = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+    const respuestaIA = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
