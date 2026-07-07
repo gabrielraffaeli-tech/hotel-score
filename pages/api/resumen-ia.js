@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   try {
     // 2. Aquí va la llave secreta para usar la Inteligencia Artificial
-    const API_KEY = "TU_API_KEY_AQUI";
+    const API_KEY = process.env.GEMINI_API_KEY;
 
     // 3. Juntamos todas las opiniones en un solo texto largo
     const textoReseñas = reseñas.map(r => r.texto || r.text || '').join('\n\n');
